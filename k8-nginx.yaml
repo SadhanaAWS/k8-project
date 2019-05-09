@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bnginx-svc
+  labels:
+    app: bnginx-label
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: bnginx-label
+  type: NodePort
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bnginx-pvc
+  labels:
+    app: bnginx-label
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: bnginx-deploy
+  labels:
+    app: bnginx-label
+spec:
+  selector:
+    matchLabels:
+      app: bnginx-label
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: bnginx-label
+    spec:
+      containers:
+      - image: nginx:latest
+        name: bnginx-pod
+        ports:
+        - containerPort: 80
+          name: bnginx-pod
+        volumeMounts:
+        - name: bnginx-pv
+          mountPath: /var/www/html
+      volumes:
+      - name: bnginx-pv
+        persistentVolumeClaim:
+          claimName: bnginx-pvc
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: bnginx-ingress
+spec:
+  rules:
+  - host: sadhana.bnginx.kops.bsh-ac.cloud
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: bnginx-svc
+          servicePort: 80
