@@ -61,7 +61,7 @@ metadata:
   name: bnginx-ingress
 spec:
   rules:
-  - host: sadhana.bnginx.kops.bsh-ac.cloud
+  - host: sadhana.cicd.nginx.kops.bsh-ac.cloud
     http:
       paths:
       - path: /
